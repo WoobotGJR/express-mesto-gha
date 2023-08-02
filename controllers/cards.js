@@ -11,13 +11,25 @@ module.exports.createCard = (req, res) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Ошибка при получении карточки по id' }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные при создании карточки' });
+      } else {
+        res.status(500).send({ message: 'Ошибка при содании карточки' });
+      }
+    });
 };
 
 module.exports.deleteCardById = (req, res) => {
   Card.findByIdAndRemove(req.params.id)
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка при удалении карточки' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+      } else {
+        res.status(500).send({ message: 'Ошибка при удалении карточки' });
+      }
+    });
 };
 
 module.exports.likeCard = (req, res) => {
@@ -26,8 +38,20 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .then((updatedCard) => res.send({ data: updatedCard }))
-    .catch(() => res.status(500).send({ message: 'Ошибка при постановке лайка' }));
+    .then((updatedCard) => {
+      if (!updatedCard) {
+        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+      } else {
+        res.send({ data: updatedCard });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка при постановке лайка' });
+      }
+    });
 };
 
 module.exports.dislikeCard = (req, res) => {
@@ -36,6 +60,18 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .then((updatedCard) => res.send({ data: updatedCard }))
-    .catch(() => res.status(500).send({ message: 'При снятии лайка произошла ошибка' }));
+    .then((updatedCard) => {
+      if (!updatedCard) {
+        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+      } else {
+        res.send({ data: updatedCard });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка' });
+      } else {
+        res.status(500).send({ message: 'Произошла ошибка при снятии лайка' });
+      }
+    });
 };
