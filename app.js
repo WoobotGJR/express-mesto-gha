@@ -33,6 +33,11 @@ app.use((req, res, next) => {
 app.use('/users', usersRoute);
 app.use('/cards', cardsRoute);
 
+app.use((req, res) => {
+  res.status(404);
+  res.send({ message: 'Страница не найдена' });
+});
+
 // app.use(express.static(__dirname));
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
