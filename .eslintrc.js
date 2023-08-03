@@ -3,7 +3,7 @@ module.exports = {
     browser: true,
     es2021: true,
   },
-  extends: ['eslint:recommended', 'plugin:react/recommended', 'airbnb-base'],
+  extends: ['eslint:recommended', 'airbnb-base'],
   overrides: [
     {
       env: {
@@ -20,5 +20,5 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['react'],
-  rules: { 'no-underscore-dangle': 0 },
+  rules: { 'no-underscore-dangle': ['error', { allow: ['_id'] }] },
 };
