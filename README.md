@@ -14,3 +14,5 @@
 
 `npm run start` — запускает сервер   
 `npm run dev` — запускает сервер с hot-reload
+
+# Cсылка на репозиторий: https://github.com/WoobotGJR/express-mesto-gha
