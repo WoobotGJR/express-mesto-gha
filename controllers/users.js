@@ -19,7 +19,7 @@ module.exports.getUserById = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные при поиске пользователя по id' });
-      } else if (err.name === 'UndefinedIdError') {
+      } else if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Пользователь с таким id не найден' });
       } else {
         res.status(500).send({ message: 'Произошла непредвиденная ошибка' });
@@ -50,7 +50,7 @@ module.exports.updateAvatar = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные при редактировании информации о пользователе' });
-      } else if (err.name === 'UndefinedIdError') {
+      } else if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Пользователь с таким id не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка при обновлении информации о пользователе' });
@@ -68,7 +68,7 @@ module.exports.updateUserInfo = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные при редактировании информации о пользователе' });
-      } else if (err.name === 'UndefinedIdError') {
+      } else if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Пользователь с таким id не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка при обновлении информации о пользователе' });

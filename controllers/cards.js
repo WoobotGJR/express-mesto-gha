@@ -27,7 +27,7 @@ module.exports.deleteCardById = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные при удалении карточки' });
-      } else if (err.name === 'UndefinedIdError') {
+      } else if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Карточка с указанным id не найдена' });
       } else {
         res.status(500).send({ message: 'Ошибка при удалении карточки' });
@@ -46,7 +46,7 @@ module.exports.likeCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка' });
-      } else if (err.name === 'UndefinedIdError') {
+      } else if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Карточка с указанным id не найдена' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка при постановке лайка' });
@@ -65,7 +65,7 @@ module.exports.dislikeCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка' });
-      } else if (err.name === 'UndefinedIdError') {
+      } else if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Карточка с указанным id не найдена' });
       } else {
         res.status(500).send({ message: 'Произошла ошибка при постановке лайка' });
