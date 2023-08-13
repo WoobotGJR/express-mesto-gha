@@ -1,11 +1,15 @@
-/* eslint-disable no-console */
-// const path = require('path');
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const usersRoute = require('./routes/users');
 const cardsRoute = require('./routes/cards');
+const {
+  login,
+  createUser,
+} = require('./controllers/users');
+const auth = require('./middlewares/auth');
 
 const dataBaseUrl = 'mongodb://127.0.0.1:27017/mestodb';
 const { PORT = 3000 } = process.env;
@@ -24,16 +28,11 @@ app.use(helmet()); // https://expressjs.com/ru/advanced/best-practice-security.h
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Данная конструкция позволяет отправлять _id при каждом запросе
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64c94dce3a879cbee1b461f5',
-  };
+app.post('/signin', login);
+app.post('/signup', createUser);
 
-  next();
-});
-app.use('/users', usersRoute);
-app.use('/cards', cardsRoute);
+app.use('/users', auth, usersRoute);
+app.use('/cards', auth, cardsRoute);
 
 app.use((req, res) => {
   res.status(404);
