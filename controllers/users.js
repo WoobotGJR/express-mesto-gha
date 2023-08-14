@@ -99,6 +99,8 @@ module.exports.login = (req, res) => {
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      // console.log(user);
+
       const token = jwt.sign(
         { _id: user._id },
         NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', // cгенерирован единожды с помощью node -e "console.log(require('crypto').randomBytes(32).toString('hex'));"
@@ -111,7 +113,7 @@ module.exports.login = (req, res) => {
           httpOnly: true,
         }); // в данном случае .end() приводит к ошибке - https://stackoverflow.com/questions/7042340/error-cant-set-headers-after-they-are-sent-to-the-client
 
-      res.send(token);
+      res.send({ token });
     })
     .catch((err) => {
       res.status(401).send({ message: err.message });
@@ -120,6 +122,7 @@ module.exports.login = (req, res) => {
 
 module.exports.getCurrentUserInfo = (req, res) => {
   const currentUserId = req.user._id;
+  console.log(currentUserId);
 
   User.findById(currentUserId)
     .orFail('UndefinedIdError')
