@@ -15,7 +15,7 @@ router.get('/', getCards);
 
 router.delete('/:id', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().length(24).required(), // card ID for ex: 64da2873bf5829cc6784e410
+    id: Joi.string().length(24).required(), // card ID for ex: 64da2873bf5829cc6784e410
   }),
 }), deleteCardById);
 

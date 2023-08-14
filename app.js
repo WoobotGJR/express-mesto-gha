@@ -52,10 +52,9 @@ app.use('/cards', auth, cardsRoute);
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   res.status(404);
   res.send({ message: 'Страница не найдена' });
-  next();
 });
 
 // app.use(express.static(__dirname));
