@@ -12,7 +12,11 @@ const urlRegexPattern = /^(http(s):\/\/)[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}
 
 router.get('/', getUsers);
 router.get('/me', getCurrentUserInfo); // get запрос /me должен идти перед /:id, иначе при попытке перейти
-router.get('/:id', getUserById); // по /me он будет воспринимать me как id
+router.get('/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().length(24).required, // user id ex: 64d4f8e35509c9c8703bfc91
+  }),
+}), getUserById); // по /me он будет воспринимать me как id
 
 router.patch('/me', celebrate({
   body: Joi.object().keys({
