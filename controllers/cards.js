@@ -11,21 +11,25 @@ module.exports.createCard = (req, res) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(201).send({ data: card }))
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка при содании карточки' });
+    .catch((err) => {
+      // if (err.name === 'ValidationError') {
+      //   res.status(400).send({ message: 'Переданы некорректные данные при создании карточки' });
+      // }
+      // if {
+        res.status(500).send({ message: 'Ошибка при содании карточки' });
+      // }
     });
 };
 
-module.exports.deleteCardById = (req, res) => {
-  Card.findByIdAndRemove(req.params.id)
+module.exports.deleteCardById = (req, res, next) => {
+  Card.findById(req.params.id)
     .orFail(new Error('UndefinedIdError'))
     .then((card) => {
-      if (card.owner !== req.user._id) {
-        return;
+      if (card.owner.valueOf() !== req.user._id) {
+        return res.status(404).send({ message: 'Not Permitted' });
       }
 
-      // eslint-disable-next-line consistent-return
-      return res.send({ data: card });
+      return Card.findByIdAndRemove(req.params.id).then(res.send({ data: card }));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -36,6 +40,24 @@ module.exports.deleteCardById = (req, res) => {
         res.status(500).send({ message: 'Ошибка при удалении карточки' });
       }
     });
+  // Card.findByIdAndRemove(req.params.id)
+  //   .orFail(new Error('UndefinedIdError'))
+  //   .then((card) => {
+  //     if (card.owner !== req.user._id) {
+  //   return res.status(404).send({ message: 'Невозможно удалить карточку другого пользователя' });
+  //     }
+
+  //     return res.status(201).send({ data: card });
+  //   })
+  //   .catch((err) => {
+  //     if (err.name === 'CastError') {
+  //       res.status(400).send({ message: 'Переданы некорректные данные при удалении карточки' });
+  //     } else if (err.message === 'UndefinedIdError') {
+  //       res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+  //     } else {
+  //       res.status(500).send({ message: 'Ошибка при удалении карточки' });
+  //     }
+  //   });
 };
 
 module.exports.likeCard = (req, res) => {
