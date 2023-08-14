@@ -14,7 +14,7 @@ router.get('/', getUsers);
 router.get('/me', getCurrentUserInfo); // get запрос /me должен идти перед /:id, иначе при попытке перейти
 router.get('/:id', celebrate({
   params: Joi.object().keys({
-    id: Joi.string().length(24).required, // user id ex: 64d4f8e35509c9c8703bfc91
+    id: Joi.string().length(24).required(), // user id ex: 64d4f8e35509c9c8703bfc91
   }),
 }), getUserById); // по /me он будет воспринимать me как id
 
