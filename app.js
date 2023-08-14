@@ -1,15 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const { errors } = require('celebrate');
 const usersRoute = require('./routes/users');
 const cardsRoute = require('./routes/cards');
+const auth = require('./middlewares/auth');
 const {
   login,
   createUser,
 } = require('./controllers/users');
-const auth = require('./middlewares/auth');
 
 const dataBaseUrl = 'mongodb://127.0.0.1:27017/mestodb';
 const { PORT = 3000 } = process.env;
@@ -25,8 +27,10 @@ mongoose.connect(dataBaseUrl, {
 const app = express();
 
 app.use(helmet()); // https://expressjs.com/ru/advanced/best-practice-security.html
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 app.post('/signin', login);
 app.post('/signup', createUser);
@@ -34,7 +38,10 @@ app.post('/signup', createUser);
 app.use('/users', auth, usersRoute);
 app.use('/cards', auth, cardsRoute);
 
-app.use((req, res) => {
+app.use(errors());
+
+app.use((err, req, res, next) => {
+  console.log(err.status);
   res.status(404);
   res.send({ message: 'Страница не найдена' });
 });
