@@ -21,9 +21,10 @@ module.exports.getUserById = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при поиске пользователя по id' });
-      } else if (err.message === 'UndefinedIdError') {
+      // if (err.name === 'CastError') {
+      //   res.status(400).send({ message: 'Переданы некорректные данные при поиске пользователя по id' });
+      // }
+      if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Пользователь с таким id не найден' });
       } else {
         res.status(500).send({ message: 'Произошла непредвиденная ошибка' });
@@ -63,11 +64,12 @@ module.exports.createUser = (req, res) => {
         if (err.code === 11000) {
           res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
         }
-        else if (err.name === 'ValidationError') {
-          res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
-        } else {
+        // if (err.name === 'ValidationError') {
+        //   res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
+        // }
+        // else {
           res.status(500).send({ message: 'Ошибка при создании пользователя' });
-        }
+        // }
       }))
     .catch((err) => res.status(400).send(err));
 };
@@ -79,9 +81,10 @@ module.exports.updateAvatar = (req, res) => {
     .orFail('UndefinedIdError')
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при редактировании информации о пользователе' });
-      } else if (err.message === 'UndefinedIdError') {
+      // if (err.name === 'ValidationError') {
+      //   res.status(400).send({ message: 'Переданы некорректные данные при редактировании информации о пользователе' });
+      // }
+      if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Пользователь с таким id не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка при обновлении информации о пользователе' });
@@ -97,9 +100,10 @@ module.exports.updateUserInfo = (req, res) => {
     .orFail('UndefinedIdError')
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при редактировании информации о пользователе' });
-      } else if (err.message === 'UndefinedIdError') {
+      // if (err.name === 'ValidationError') {
+      //   res.status(400).send({ message: 'Переданы некорректные данные при редактировании информации о пользователе' });
+      // }
+      if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Пользователь с таким id не найден' });
       } else {
         res.status(500).send({ message: 'Ошибка при обновлении информации о пользователе' });
@@ -141,9 +145,10 @@ module.exports.getCurrentUserInfo = (req, res) => {
     .orFail('UndefinedIdError')
     .then((user) => res.send({ user }))
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при получении данных пользователя' });
-      } else if (err.message === 'UndefinedIdError') {
+      // if (err.name === 'CastError') {
+      //   res.status(400).send({ message: 'Переданы некорректные данные при получении данных пользователя' });
+      // }
+      if (err.message === 'UndefinedIdError') {
         res.status(404).send({ message: 'Пользователь с таким id не найден' });
       } else {
         res.status(500).send({ message: 'Произошла непредвиденная ошибка' });

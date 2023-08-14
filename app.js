@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-const { errors } = require('celebrate');
+const { errors, celebrate, Joi } = require('celebrate');
 const usersRoute = require('./routes/users');
 const cardsRoute = require('./routes/cards');
 const auth = require('./middlewares/auth');
@@ -15,14 +15,12 @@ const {
 
 const dataBaseUrl = 'mongodb://127.0.0.1:27017/mestodb';
 const { PORT = 3000 } = process.env;
+const urlRegexPattern = /^(http(s):\/\/.)[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)$/;
 
 // https://stackoverflow.com/questions/69195824/trying-to-connect-mongodb-to-my-web-app-but-it-shows-following-error
 mongoose.connect(dataBaseUrl, {
   useNewUrlParser: true,
-})
-  .then(() => {
-    console.log('DB connected');
-  });
+});
 
 const app = express();
 
@@ -32,8 +30,22 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+  }),
+}), login);
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(urlRegexPattern),
+  }),
+}), createUser);
 
 app.use('/users', auth, usersRoute);
 app.use('/cards', auth, cardsRoute);
@@ -41,12 +53,10 @@ app.use('/cards', auth, cardsRoute);
 app.use(errors());
 
 app.use((err, req, res, next) => {
-  console.log(err.status);
   res.status(404);
   res.send({ message: 'Страница не найдена' });
+  next();
 });
 
 // app.use(express.static(__dirname));
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
-});
+app.listen(PORT);
