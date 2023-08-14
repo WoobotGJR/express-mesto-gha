@@ -48,9 +48,22 @@ module.exports.createUser = (req, res) => {
       email,
       password: hash,
     })
-      .then((user) => res.status(201).send({ data: user }))
+      .then((user) => res.status(201).send(
+        {
+          data: {
+            name: user.name, // в данном случае свойство select: false в схеме пользователя
+            about: user.about, // не отменяет отправление поля password в json ответе
+            avatar: user.avatar, // поэтому, вручную пропишем необходимые данные свойства data
+            email: user.email,
+            _id: user._id,
+          },
+        },
+      ))
       .catch((err) => {
-        if (err.name === 'ValidationError') {
+        if (err.code === 11000) {
+          res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
+        }
+        else if (err.name === 'ValidationError') {
           res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
         } else {
           res.status(500).send({ message: 'Ошибка при создании пользователя' });
