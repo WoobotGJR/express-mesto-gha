@@ -18,13 +18,14 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCardById = (req, res, next) => {
   Card.findById(req.params.id)
-    .orFail(new Error('UndefinedIdError'))
+    .populate(['owner', 'likes'])
+    .orFail(new NotFoundError('UndefinedIdError'))
     .then((card) => {
       if (card.owner.valueOf() !== req.user._id) {
         throw new ForbiddenError('Доступ к ресурсу запрещён'); // Throw переводит обработку в блок catch
       }
 
-      return Card.findByIdAndRemove(req.params.id).then(res.send({ data: card }));
+      return card.deleteOne().then(res.send({ data: card })).catch(next);
     })
     .catch((err) => {
       if (err.message === 'UndefinedIdError') {
@@ -41,13 +42,14 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .orFail(new Error('UndefinedIdError'))
+    .populate(['owner', 'likes'])
+    .orFail(new NotFoundError('UndefinedIdError'))
     .then((updatedCard) => res.send({ data: updatedCard }))
     .catch((err) => {
       if (err.message === 'UndefinedIdError') {
         next(new NotFoundError('Карточка с указанным id не найдена'));
       } else {
-        next();
+        next(err);
       }
     });
 };
@@ -58,13 +60,14 @@ module.exports.dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .orFail(new Error('UndefinedIdError'))
+    .populate(['owner', 'likes'])
+    .orFail(new NotFoundError('UndefinedIdError'))
     .then((updatedCard) => res.send({ data: updatedCard }))
     .catch((err) => {
       if (err.message === 'UndefinedIdError') {
         next(new NotFoundError('Карточка с указанным id не найдена'));
       } else {
-        next();
+        next(err);
       }
     });
 };

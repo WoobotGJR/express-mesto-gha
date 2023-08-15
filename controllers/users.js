@@ -3,8 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
-const BadRequestError = require('../errors/BadRequestError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -16,7 +14,7 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail(new Error('UndefinedIdError'))
+    .orFail(new NotFoundError('UndefinedIdError'))
     .then((user) => {
       if (!user) {
         throw new NotFoundError('Пользователь с таким id не найден');
@@ -28,7 +26,7 @@ module.exports.getUserById = (req, res, next) => {
       if (err.message === 'UndefinedIdError') {
         next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        next();
+        next(err);
       }
     });
 };
@@ -64,23 +62,24 @@ module.exports.createUser = (req, res, next) => {
       .catch((err) => {
         if (err.code === 11000) {
           next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+        } else {
+          next(err);
         }
-        next();
       }))
-    .catch((err) => next(new BadRequestError(err.message)));
+    .catch(next);
 };
 
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .orFail('UndefinedIdError')
+    .orFail(new NotFoundError('UndefinedIdError'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.message === 'UndefinedIdError') {
         next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        next();
+        next(err);
       }
     });
 };
@@ -90,13 +89,13 @@ module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .orFail('UndefinedIdError')
+    .orFail(new NotFoundError('UndefinedIdError'))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.message === 'UndefinedIdError') {
         next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        next();
+        next(err);
       }
     });
 };
@@ -119,25 +118,21 @@ module.exports.login = (req, res, next) => {
           maxAge: 604800000, // длительность - 1 неделя, умножено на 1000, так как maxAge в мс
           httpOnly: true,
         }); // в данном случае .end() приводит к ошибке - https://stackoverflow.com/questions/7042340/error-cant-set-headers-after-they-are-sent-to-the-client
-
-      res.send({ token });
     })
-    .catch((err) => {
-      next(new UnauthorizedError(err.message));
-    });
+    .catch(next);
 };
 
 module.exports.getCurrentUserInfo = (req, res, next) => {
   const currentUserId = req.user._id;
 
   User.findById(currentUserId)
-    .orFail('UndefinedIdError')
+    .orFail(new NotFoundError('UndefinedIdError'))
     .then((user) => res.send({ user }))
     .catch((err) => {
       if (err.message === 'UndefinedIdError') {
         next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        next();
+        next(err);
       }
     });
 };

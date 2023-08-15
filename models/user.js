@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const userSchema = new mongoose.Schema(
   {
@@ -8,19 +9,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       minlength: [2, 'Минимальная длина поля "name" - 2'],
       maxlength: [30, 'Максимальная длина поля "name" - 30'],
-      required: [true, 'Поле "name" должно быть заполнено'],
       default: 'Жак-Ив Кусто',
     },
     about: {
       type: String,
       minlength: [2, 'Минимальная длина поля "about" - 2'],
       maxlength: [30, 'Максимальная длина поля "about" - 30'],
-      required: [true, 'Поле "about" должно быть заполнено'],
       default: 'Исследователь',
     },
     avatar: {
       type: String,
-      required: [true, 'Поле "avatar" должно быть заполнено'],
       validate: {
         validator: (v) => validator.isURL(v),
         message: 'Некорректный URL',
@@ -39,7 +37,6 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Поле "password" должно быть заполнено'],
-      minlength: [8, 'Минимальная длина поля "password" - 8'],
       select: false, // при запросе данное поле не будет отправлено в json
     },
   },
@@ -51,13 +48,13 @@ userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error('Неправильные логин или пароль'));
+        return Promise.reject(new UnauthorizedError('Неправильные логин или пароль'));
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new Error('Неправильные логин или пароль'));
+            return Promise.reject(new UnauthorizedError('Неправильные логин или пароль'));
           }
 
           return user;

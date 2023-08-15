@@ -15,7 +15,7 @@ router.get('/', getCards);
 
 router.delete('/:id', celebrate({
   params: Joi.object().keys({
-    id: Joi.string().length(24).required(), // card ID for ex: 64da2873bf5829cc6784e410
+    id: Joi.string().length(24).hex().required(), // card ID for ex: 64da2873bf5829cc6784e410
   }),
 }), deleteCardById);
 
@@ -28,13 +28,14 @@ router.post('/', celebrate({
 
 router.put('/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().length(24).required(),
+    // Идентификаторы в MongoDB представляют из себя шестнадцатеричные числа длиной 24 символа.
+    cardId: Joi.string().hex().length(24).required(),
   }),
 }), likeCard);
 
 router.delete('/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().length(24).required(),
+    cardId: Joi.string().hex().length(24).required(),
   }),
 }), dislikeCard);
 

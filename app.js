@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 
 const helmet = require('helmet');
 const { errors, celebrate, Joi } = require('celebrate');
+const errorHandler = require('./middlewares/errorHandler');
 const NotFoundError = require('./errors/NotFoundError');
 
 const usersRoute = require('./routes/users');
@@ -62,19 +63,7 @@ app.use(errors());
 app.use((req, res, next) => next(new NotFoundError('Страница не найдена')));
 
 // Общий обработчик ошибок
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === 500
-        ? 'На сервере произошла ошибка'
-        : message,
-    });
-
-  next();
-});
+app.use(errorHandler); // вынесен в middleware
 
 // app.use(express.static(__dirname));
 app.listen(PORT);
