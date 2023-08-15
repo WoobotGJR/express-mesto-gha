@@ -1,24 +1,19 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка при получении списка карточек' }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(201).send({ data: card }))
-    .catch((err) => {
-      // if (err.name === 'ValidationError') {
-      //   res.status(400).send({ message: 'Переданы некорректные данные при создании карточки' });
-      // }
-      // if {
-        res.status(500).send({ message: 'Ошибка при содании карточки' });
-      // }
-    });
+    .catch(next);
 };
 
 module.exports.deleteCardById = (req, res, next) => {
@@ -26,41 +21,21 @@ module.exports.deleteCardById = (req, res, next) => {
     .orFail(new Error('UndefinedIdError'))
     .then((card) => {
       if (card.owner.valueOf() !== req.user._id) {
-        return res.status(404).send({ message: 'Not Permitted' });
+        throw new ForbiddenError('Доступ к ресурсу запрещён'); // Throw переводит обработку в блок catch
       }
 
       return Card.findByIdAndRemove(req.params.id).then(res.send({ data: card }));
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при удалении карточки' });
-      } else if (err.message === 'UndefinedIdError') {
-        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+      if (err.message === 'UndefinedIdError') {
+        next(new NotFoundError('Карточка с указанным id не найдена'));
       } else {
-        res.status(500).send({ message: 'Ошибка при удалении карточки' });
+        next();
       }
     });
-  // Card.findByIdAndRemove(req.params.id)
-  //   .orFail(new Error('UndefinedIdError'))
-  //   .then((card) => {
-  //     if (card.owner !== req.user._id) {
-  //   return res.status(404).send({ message: 'Невозможно удалить карточку другого пользователя' });
-  //     }
-
-  //     return res.status(201).send({ data: card });
-  //   })
-  //   .catch((err) => {
-  //     if (err.name === 'CastError') {
-  //       res.status(400).send({ message: 'Переданы некорректные данные при удалении карточки' });
-  //     } else if (err.message === 'UndefinedIdError') {
-  //       res.status(404).send({ message: 'Карточка с указанным id не найдена' });
-  //     } else {
-  //       res.status(500).send({ message: 'Ошибка при удалении карточки' });
-  //     }
-  //   });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
@@ -69,18 +44,15 @@ module.exports.likeCard = (req, res) => {
     .orFail(new Error('UndefinedIdError'))
     .then((updatedCard) => res.send({ data: updatedCard }))
     .catch((err) => {
-      // if (err.name === 'CastError') {
-      //   res.status(400).send({ message: 'Переданы некорректные данные для постановки лайка' });
-      // }
       if (err.message === 'UndefinedIdError') {
-        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+        next(new NotFoundError('Карточка с указанным id не найдена'));
       } else {
-        res.status(500).send({ message: 'Произошла ошибка при постановке лайка' });
+        next();
       }
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
@@ -89,13 +61,10 @@ module.exports.dislikeCard = (req, res) => {
     .orFail(new Error('UndefinedIdError'))
     .then((updatedCard) => res.send({ data: updatedCard }))
     .catch((err) => {
-      // if (err.name === 'CastError') {
-      //   res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка' });
-      // }
       if (err.message === 'UndefinedIdError') {
-        res.status(404).send({ message: 'Карточка с указанным id не найдена' });
+        next(new NotFoundError('Карточка с указанным id не найдена'));
       } else {
-        res.status(500).send({ message: 'Произошла ошибка при постановке лайка' });
+        next();
       }
     });
 };

@@ -41,7 +41,6 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Поле "password" должно быть заполнено'],
       minlength: [8, 'Минимальная длина поля "password" - 8'],
       select: false, // при запросе данное поле не будет отправлено в json
-      // maxlength: [20, 'Максимальная длина поля "password" - 20'],
     },
   },
   { versionKey: false },
@@ -51,15 +50,15 @@ const userSchema = new mongoose.Schema(
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
-      // if (!user) {
-      //   return Promise.reject(new Error('Неправильные логин или пароль'));
-      // }
+      if (!user) {
+        return Promise.reject(new Error('Неправильные логин или пароль'));
+      }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
-          // if (!matched) {
-          //   return Promise.reject(new Error('Неправильные логин или пароль'));
-          // }
+          if (!matched) {
+            return Promise.reject(new Error('Неправильные логин или пароль'));
+          }
 
           return user;
         });

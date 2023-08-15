@@ -1,38 +1,39 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const ConflictError = require('../errors/ConflictError');
+const BadRequestError = require('../errors/BadRequestError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch(() => res.status(500).send({ message: 'Ошибка при получении списка пользователей' }));
+    .catch(next);
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.id)
     .orFail(new Error('UndefinedIdError'))
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь с таким id не найден' });
+        throw new NotFoundError('Пользователь с таким id не найден');
       } else {
         res.send({ data: user });
       }
     })
     .catch((err) => {
-      // if (err.name === 'CastError') {
-      //   res.status(400).send({ message: 'Переданы некорректные данные при поиске пользователя по id' });
-      // }
       if (err.message === 'UndefinedIdError') {
-        res.status(404).send({ message: 'Пользователь с таким id не найден' });
+        next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        res.status(500).send({ message: 'Произошла непредвиденная ошибка' });
+        next();
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name,
     about,
@@ -62,56 +63,45 @@ module.exports.createUser = (req, res) => {
       ))
       .catch((err) => {
         if (err.code === 11000) {
-          res.status(409).send({ message: 'Пользователь с таким email уже зарегистрирован' });
+          next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
         }
-        // if (err.name === 'ValidationError') {
-        //   res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
-        // }
-        // else {
-          res.status(500).send({ message: 'Ошибка при создании пользователя' });
-        // }
+        next();
       }))
-    .catch((err) => res.status(400).send(err));
+    .catch((err) => next(new BadRequestError(err.message)));
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail('UndefinedIdError')
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      // if (err.name === 'ValidationError') {
-      //   res.status(400).send({ message: 'Переданы некорректные данные при редактировании информации о пользователе' });
-      // }
       if (err.message === 'UndefinedIdError') {
-        res.status(404).send({ message: 'Пользователь с таким id не найден' });
+        next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        res.status(500).send({ message: 'Ошибка при обновлении информации о пользователе' });
+        next();
       }
     });
 };
 
 // без опции runValidators можно будет отправить запрос с данными, не подходящими к схеме - https://mongoosejs.com/docs/validation.html
-module.exports.updateUserInfo = (req, res) => {
+module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail('UndefinedIdError')
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      // if (err.name === 'ValidationError') {
-      //   res.status(400).send({ message: 'Переданы некорректные данные при редактировании информации о пользователе' });
-      // }
       if (err.message === 'UndefinedIdError') {
-        res.status(404).send({ message: 'Пользователь с таким id не найден' });
+        next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        res.status(500).send({ message: 'Ошибка при обновлении информации о пользователе' });
+        next();
       }
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -133,25 +123,21 @@ module.exports.login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      res.status(401).send({ message: err.message });
+      next(new UnauthorizedError(err.message));
     });
 };
 
-module.exports.getCurrentUserInfo = (req, res) => {
+module.exports.getCurrentUserInfo = (req, res, next) => {
   const currentUserId = req.user._id;
-  console.log(currentUserId);
 
   User.findById(currentUserId)
     .orFail('UndefinedIdError')
     .then((user) => res.send({ user }))
     .catch((err) => {
-      // if (err.name === 'CastError') {
-      //   res.status(400).send({ message: 'Переданы некорректные данные при получении данных пользователя' });
-      // }
       if (err.message === 'UndefinedIdError') {
-        res.status(404).send({ message: 'Пользователь с таким id не найден' });
+        next(new NotFoundError('Пользователь с таким id не найден'));
       } else {
-        res.status(500).send({ message: 'Произошла непредвиденная ошибка' });
+        next();
       }
     });
 };

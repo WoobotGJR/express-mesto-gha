@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors, celebrate, Joi } = require('celebrate');
+const ForbiddenError = require('./errors/ForbiddenError');
 const usersRoute = require('./routes/users');
 const cardsRoute = require('./routes/cards');
 const auth = require('./middlewares/auth');
@@ -52,9 +53,21 @@ app.use('/cards', auth, cardsRoute);
 
 app.use(errors());
 
-app.use((err, req, res) => {
-  res.status(404);
-  res.send({ message: 'Страница не найдена' });
+app.use((req, res, next) => next(new ForbiddenError('Страница не найдена')));
+
+// Общий обработчик ошибок
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
+
+  next();
 });
 
 // app.use(express.static(__dirname));
