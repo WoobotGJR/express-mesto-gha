@@ -1,13 +1,18 @@
 require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
+
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+
 const helmet = require('helmet');
 const { errors, celebrate, Joi } = require('celebrate');
-const ForbiddenError = require('./errors/ForbiddenError');
+const NotFoundError = require('./errors/NotFoundError');
+
 const usersRoute = require('./routes/users');
 const cardsRoute = require('./routes/cards');
+
 const auth = require('./middlewares/auth');
 const {
   login,
@@ -16,6 +21,7 @@ const {
 
 const dataBaseUrl = 'mongodb://127.0.0.1:27017/mestodb';
 const { PORT = 3000 } = process.env;
+
 const urlRegexPattern = /^(http(s):\/\/)[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)$/;
 
 // https://stackoverflow.com/questions/69195824/trying-to-connect-mongodb-to-my-web-app-but-it-shows-following-error
@@ -53,7 +59,7 @@ app.use('/cards', auth, cardsRoute);
 
 app.use(errors());
 
-app.use((req, res, next) => next(new ForbiddenError('Страница не найдена')));
+app.use((req, res, next) => next(new NotFoundError('Страница не найдена')));
 
 // Общий обработчик ошибок
 app.use((err, req, res, next) => {
