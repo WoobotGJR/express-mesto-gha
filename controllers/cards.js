@@ -18,7 +18,6 @@ module.exports.createCard = (req, res, next) => {
 
 module.exports.deleteCardById = (req, res, next) => {
   Card.findById(req.params.id)
-    .populate(['owner', 'likes'])
     .orFail(new NotFoundError('UndefinedIdError'))
     .then((card) => {
       if (card.owner.valueOf() !== req.user._id) {
