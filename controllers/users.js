@@ -118,6 +118,8 @@ module.exports.login = (req, res, next) => {
           maxAge: 604800000, // длительность - 1 неделя, умножено на 1000, так как maxAge в мс
           httpOnly: true,
         }); // в данном случае .end() приводит к ошибке - https://stackoverflow.com/questions/7042340/error-cant-set-headers-after-they-are-sent-to-the-client
+
+      res.send({ token }); // Данный ответ необходим, так как res.cookie не отправляет токен
     })
     .catch(next);
 };
