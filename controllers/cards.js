@@ -30,7 +30,7 @@ module.exports.deleteCardById = (req, res, next) => {
       if (err.message === 'UndefinedIdError') {
         next(new NotFoundError('Карточка с указанным id не найдена'));
       } else {
-        next();
+        next(err); // В данном случае обязательно передать err, чтобы передать ошибку из блока then
       }
     });
 };
