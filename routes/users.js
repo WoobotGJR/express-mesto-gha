@@ -1,5 +1,7 @@
 const router = require('express').Router();
 
+const { celebrate } = require('celebrate');
+
 const {
   userIdValidation,
   userInfoUpdateValidation,
@@ -16,10 +18,10 @@ const {
 
 router.get('/', getUsers);
 router.get('/me', getCurrentUserInfo); // get запрос /me должен идти перед /:id, иначе при попытке перейти
-router.get('/:id', userIdValidation, getUserById); // по /me он будет воспринимать me как id
+router.get('/:id', celebrate(userIdValidation), getUserById); // по /me он будет воспринимать me как id
 
-router.patch('/me', userInfoUpdateValidation, updateUserInfo);
+router.patch('/me', celebrate(userInfoUpdateValidation), updateUserInfo);
 
-router.patch('/me/avatar', userAvatarUpdateValidation, updateAvatar);
+router.patch('/me/avatar', celebrate(userAvatarUpdateValidation), updateAvatar);
 
 module.exports = router;
