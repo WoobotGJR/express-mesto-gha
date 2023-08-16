@@ -17,7 +17,8 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCardById = (req, res, next) => {
-  Card.findById(req.params.id)
+  Card.findById(req.params.cardId)
+    // метод populate не нужен для удаления карточек
     .orFail(new NotFoundError('UndefinedIdError'))
     .then((card) => {
       if (card.owner.valueOf() !== req.user._id) {

@@ -1,6 +1,10 @@
 const router = require('express').Router();
 
-const { celebrate, Joi } = require('celebrate');
+const {
+  cardIdValidation,
+  createCardValidation,
+} = require('./routeValidationRules');
+
 const {
   createCard,
   deleteCardById,
@@ -9,34 +13,14 @@ const {
   dislikeCard,
 } = require('../controllers/cards');
 
-const urlRegexPattern = /^(http(s):\/\/)[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)$/;
-
 router.get('/', getCards);
 
-router.delete('/:id', celebrate({
-  params: Joi.object().keys({
-    id: Joi.string().length(24).hex().required(), // card ID for ex: 64da2873bf5829cc6784e410
-  }),
-}), deleteCardById);
+router.delete('/:cardId', cardIdValidation, deleteCardById);
 
-router.post('/', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().pattern(urlRegexPattern).required(),
-  }),
-}), createCard);
+router.post('/', createCardValidation, createCard);
 
-router.put('/:cardId/likes', celebrate({
-  params: Joi.object().keys({
-    // Идентификаторы в MongoDB представляют из себя шестнадцатеричные числа длиной 24 символа.
-    cardId: Joi.string().hex().length(24).required(),
-  }),
-}), likeCard);
+router.put('/:cardId/likes', cardIdValidation, likeCard);
 
-router.delete('/:cardId/likes', celebrate({
-  params: Joi.object().keys({
-    cardId: Joi.string().hex().length(24).required(),
-  }),
-}), dislikeCard);
+router.delete('/:cardId/likes', cardIdValidation, dislikeCard);
 
 module.exports = router;
