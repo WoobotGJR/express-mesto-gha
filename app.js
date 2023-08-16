@@ -4,6 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 const helmet = require('helmet');
 const { errors } = require('celebrate');
@@ -28,6 +29,8 @@ const app = express();
 
 app.use(helmet()); // https://expressjs.com/ru/advanced/best-practice-security.html
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/', signinRoute);
