@@ -14,21 +14,11 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail(new NotFoundError('UndefinedIdError'))
+    .orFail(new NotFoundError('Пользователь с таким id не найден'))
     .then((user) => {
-      if (!user) {
-        throw new NotFoundError('Пользователь с таким id не найден');
-      } else {
-        res.send({ data: user });
-      }
+      res.send({ data: user });
     })
-    .catch((err) => {
-      if (err.message === 'UndefinedIdError') {
-        next(new NotFoundError('Пользователь с таким id не найден'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -75,13 +65,7 @@ module.exports.updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(new NotFoundError('UndefinedIdError'))
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.message === 'UndefinedIdError') {
-        next(new NotFoundError('Пользователь с таким id не найден'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 // без опции runValidators можно будет отправить запрос с данными, не подходящими к схеме - https://mongoosejs.com/docs/validation.html
@@ -91,13 +75,7 @@ module.exports.updateUserInfo = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(new NotFoundError('UndefinedIdError'))
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.message === 'UndefinedIdError') {
-        next(new NotFoundError('Пользователь с таким id не найден'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.login = (req, res, next) => {
@@ -119,7 +97,7 @@ module.exports.login = (req, res, next) => {
           httpOnly: true,
         }); // в данном случае .end() приводит к ошибке - https://stackoverflow.com/questions/7042340/error-cant-set-headers-after-they-are-sent-to-the-client
 
-      res.send({ token }); // Данный ответ необходим, так как res.cookie не отправляет токен
+      res.send({ email }); // Данный ответ необходим, так как res.cookie не отправляет токен
     })
     .catch(next);
 };

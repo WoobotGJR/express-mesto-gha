@@ -27,13 +27,7 @@ module.exports.deleteCardById = (req, res, next) => {
 
       return card.deleteOne().then(res.send({ data: card })).catch(next);
     })
-    .catch((err) => {
-      if (err.message === 'UndefinedIdError') {
-        next(new NotFoundError('Карточка с указанным id не найдена'));
-      } else {
-        next(err); // В данном случае обязательно передать err, чтобы передать ошибку из блока then
-      }
-    });
+    .catch(next); // В данном случае обязательно передать err, чтобы передать ошибку из блока then
 };
 
 module.exports.likeCard = (req, res, next) => {
@@ -45,13 +39,7 @@ module.exports.likeCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .orFail(new NotFoundError('UndefinedIdError'))
     .then((updatedCard) => res.send({ data: updatedCard }))
-    .catch((err) => {
-      if (err.message === 'UndefinedIdError') {
-        next(new NotFoundError('Карточка с указанным id не найдена'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.dislikeCard = (req, res, next) => {
@@ -63,11 +51,5 @@ module.exports.dislikeCard = (req, res, next) => {
     .populate(['owner', 'likes'])
     .orFail(new NotFoundError('UndefinedIdError'))
     .then((updatedCard) => res.send({ data: updatedCard }))
-    .catch((err) => {
-      if (err.message === 'UndefinedIdError') {
-        next(new NotFoundError('Карточка с указанным id не найдена'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
