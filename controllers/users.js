@@ -14,7 +14,7 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.id)
-    .orFail(new NotFoundError('Пользователь с таким id не найден'))
+    .orFail(new NotFoundError('Пользователь с данным id не найден'))
     .then((user) => {
       res.send({ data: user });
     })
@@ -51,7 +51,7 @@ module.exports.createUser = (req, res, next) => {
       ))
       .catch((err) => {
         if (err.code === 11000) {
-          next(new ConflictError('Пользователь с таким email уже зарегистрирован'));
+          next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
         } else {
           next(err);
         }
@@ -63,7 +63,7 @@ module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    .orFail(new NotFoundError('UndefinedIdError'))
+    .orFail(new NotFoundError('Пользователь с данным id не найден'))
     .then((user) => res.send({ data: user }))
     .catch(next);
 };
@@ -73,7 +73,7 @@ module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .orFail(new NotFoundError('UndefinedIdError'))
+    .orFail(new NotFoundError('Пользователь с данным id не найден'))
     .then((user) => res.send({ data: user }))
     .catch(next);
 };
@@ -106,13 +106,7 @@ module.exports.getCurrentUserInfo = (req, res, next) => {
   const currentUserId = req.user._id;
 
   User.findById(currentUserId)
-    .orFail(new NotFoundError('UndefinedIdError'))
+    .orFail(new NotFoundError('Пользователь с данным id не найден'))
     .then((user) => res.send({ user }))
-    .catch((err) => {
-      if (err.message === 'UndefinedIdError') {
-        next(new NotFoundError('Пользователь с таким id не найден'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
