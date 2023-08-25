@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 
 const helmet = require('helmet');
 const { errors } = require('celebrate');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const NotFoundError = require('./errors/NotFoundError');
 
@@ -33,11 +34,17 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Логгер запросов нужно подключить до всех обработчиков роутов
+app.use(requestLogger);
+
 app.use('/', signinRoute);
 app.use('/', signupRoute);
 
 app.use('/users', auth, usersRoute);
 app.use('/cards', auth, cardsRoute);
+
+// Логгер ошибок нужно подключить после обработчиков роутов и до обработчиков ошибок
+app.use(errorLogger);
 
 app.use(errors());
 
