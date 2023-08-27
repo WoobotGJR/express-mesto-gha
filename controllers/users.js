@@ -95,18 +95,19 @@ module.exports.login = (req, res, next) => {
         .cookie('jwt', token, {
           maxAge: 604800000, // длительность - 1 неделя, умножено на 1000, так как maxAge в мс
           httpOnly: true,
-        }); // в данном случае .end() приводит к ошибке - https://stackoverflow.com/questions/7042340/error-cant-set-headers-after-they-are-sent-to-the-client
-
-      res.send({ email }); // Данный ответ необходим, так как res.cookie не отправляет токен
+          saeSite: 'none',
+        }) // в данном случае .end() приводит к ошибке - https://stackoverflow.com/questions/7042340/error-cant-set-headers-after-they-are-sent-to-the-client
+        .send({ message: 'Authorized', token }); // Данный ответ необходим, так как res.cookie не отправляет токен
     })
     .catch(next);
 };
 
 module.exports.getCurrentUserInfo = (req, res, next) => {
   const currentUserId = req.user._id;
+  console.log(req.user);
 
   User.findById(currentUserId)
     .orFail(new NotFoundError('Пользователь с данным id не найден'))
-    .then((user) => res.send({ user }))
+    .then((user) => res.send({ data: user }))
     .catch(next);
 };

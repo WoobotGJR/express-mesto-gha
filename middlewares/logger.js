@@ -8,7 +8,7 @@ const requestLogger = expressWinston.logger({
     new winston.transports.File({ filename: 'request.log' }), // Опция transports отвечает за то, куда нужно писать лог
   ],
   // format отвечает за формат записи логов
-  format: winston.format.json,
+  format: winston.format.json(),
 });
 
 // Логгер ошибок

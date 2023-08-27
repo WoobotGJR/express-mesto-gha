@@ -49,14 +49,14 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     .then((user) => {
       if (!user) {
         // console.log('user is null');
-        return Promise.reject(new UnauthorizedError('Неправильные логин или пароль'));
+        throw new UnauthorizedError('Неправильные логин или пароль');
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
             // console.log('passwords are not the same', password, user.password);
-            return Promise.reject(new UnauthorizedError('Неправильные логин или пароль'));
+            throw new UnauthorizedError('Неправильные логин или пароль');
           }
 
           return user;

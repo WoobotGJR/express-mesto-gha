@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const cors = require('./middlewares/cors');
 const errorHandler = require('./middlewares/errorHandler');
 const NotFoundError = require('./errors/NotFoundError');
 
@@ -28,6 +29,7 @@ mongoose.connect(dataBaseUrl, {
 
 const app = express();
 
+app.use(cors);
 app.use(helmet()); // https://expressjs.com/ru/advanced/best-practice-security.html
 
 app.use(bodyParser.json());
