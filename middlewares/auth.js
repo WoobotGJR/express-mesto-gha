@@ -8,6 +8,7 @@ const extractBearerToken = (header) => header.replace('Bearer ', '');
 // eslint-disable-next-line consistent-return
 module.exports = (req, res, next) => {
   const { authorization } = req.headers; // authorization: '5543044c-fd15-4f3f-9950-66b2e3519db9' ex
+  // console.log(req.headers);
 
   if (!authorization) {
     return next(new UnauthorizedError('Необходима авторизация'));
